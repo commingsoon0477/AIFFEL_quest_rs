@@ -71,15 +71,21 @@ print("Cleaned DataFrame shape:", df_clean.shape)
 
 이상치 대체
 
-# 수치형 컬럼 리스트
-num_cols = df.select_dtypes(include=np.number).columns.tolist()
+1) 상*하한값으로 대체 : RMSE 143 으로 LOSS 크게 줄어들지 않음
+
+import numpy as np
+from scipy.stats import zscore
+
+num_cols = train.select_dtypes(include=np.number).columns.tolist()
 
 threshold = 3.0
 for col in num_cols:
-    # 각 행의 Z-score
-    zs = zscore(df[col].fillna(df[col].median()))  # 결측 없도록
-    # 정상 범위에 해당하는 원본값들의 하한/상한
-    valid = df[col][np.abs(zs) <= threshold]
+    zs = zscore(train[col].fillna(train[col].median()))
+    valid = train[col][np.abs(zs) <= threshold]
     lower, upper = valid.min(), valid.max()
-    # 클리핑 적용
-    df[col] = df[col].clip(lower=lower, upper=upper)
+    
+    train[col] = train[col].clip(lower=lower, upper=upper)
+
+2) 중앙값 대체 : RMSE 147 로 대체 전과 동일
+
+3) RandomForest 알고리즘 적용 : RMSE 40 으로 LOSS 줄어듬
