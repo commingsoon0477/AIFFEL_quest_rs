@@ -37,4 +37,49 @@
 
 # 회고(참고 링크 및 코드 개선)
 
+* 학습 전 결측치 및 이상치 확인
 
+train.isnull().sum() = 0 #결측치 없음
+
+import numpy as np
+from scipy.stats import zscore
+
+import pandas as pd
+import numpy as np
+from scipy.stats import zscore
+
+* 이상치 확인 시 910개 조회 : 약 1만개 데이터 중 9% 이상의 데이터에서 이상치 확인
+
+num_cols = train.select_dtypes(include=np.number).columns.tolist()
+
+z_scores = train[num_cols].apply(zscore)
+
+outlier_mask = (z_scores.abs() > threshold).any(axis=1)
+
+outlier_indices = train.index[outlier_mask]
+print(f"총 이상치 개수: {len(outlier_indices)}")
+
+이상치 제거 또는 대체 필요
+
+* 이상치 제거
+
+df_clean = df.loc[~outlier_mask].reset_index(drop=True)
+
+print("Cleaned DataFrame shape:", df_clean.shape)
+
+- 이상치 제거 후 학습 시 기존 RMSE 147 -> 변경 122 로 LOSS 줄어듬
+
+이상치 대체
+
+# 수치형 컬럼 리스트
+num_cols = df.select_dtypes(include=np.number).columns.tolist()
+
+threshold = 3.0
+for col in num_cols:
+    # 각 행의 Z-score
+    zs = zscore(df[col].fillna(df[col].median()))  # 결측 없도록
+    # 정상 범위에 해당하는 원본값들의 하한/상한
+    valid = df[col][np.abs(zs) <= threshold]
+    lower, upper = valid.min(), valid.max()
+    # 클리핑 적용
+    df[col] = df[col].clip(lower=lower, upper=upper)
