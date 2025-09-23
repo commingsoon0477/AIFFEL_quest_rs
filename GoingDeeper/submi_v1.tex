@@ -1,0 +1,124 @@
+% !TEX TS-program = xelatex
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{geometry}
+\geometry{margin=25mm}
+\usepackage{amsmath, amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{siunitx}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{csquotes}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=blue,
+  citecolor=black
+}
+
+\title{Analyzing Bias in Word Embeddings: A WEAT-Based Approach}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+This study implements the Word Embedding Association Test (WEAT) to analyze 
+social biases present in pre-trained Word2Vec embeddings. 
+In the experiment with flowers versus insects and positive versus negative attributes, 
+a strong bias was observed with effect size $d > 0.8, p < 0.01$. 
+In the gender--career/family test, male-related words were strongly associated with career terms, 
+while female-related words were associated with family terms. 
+In the gender--science/arts test, only a weak tendency was found. 
+The interpretation of effect sizes follows Cohen (1988), where 
+$d \approx 0.2$ is considered a small effect, 
+$d \approx 0.5$ a medium effect, 
+and $d \geq 0.8$ a large effect. 
+These results suggest that embeddings inherently reflect social stereotypes, 
+which can influence downstream applications.
+\end{abstract}
+
+\section{Introduction (Background \& Related Works)}
+Pre-trained embeddings learn statistical patterns from large corpora, 
+which can also encode social stereotypes. 
+\citet{caliskan2017} demonstrated through WEAT that word embeddings reflect gender and racial biases. 
+Subsequent works, such as \citet{bolukbasi2016} and \citet{may2019}, 
+extended this line of research to sentence-level evaluations and proposed debiasing methods. 
+In this study, we implement WEAT on Word2Vec embeddings to quantify the degree of bias.
+
+\section{Method}
+\subsection{Model}
+We used the GoogleNews Word2Vec model (300 dimensions, binary format, limited to the top 500k words). 
+Additionally, we trained a Word2Vec model on Korean tokenized data 
+(100 dimensions, window size = 5, min\_count = 3).
+
+\subsection{Target and Attribute sets}
+\begin{itemize}
+  \item Flowers (rose, tulip, lily, daisy) vs Insects (spider, mosquito, fly, grasshopper)
+  \item Positive (love, happiness, laughter) vs Negative (disaster, pain, hatred)
+  \item Gender--career/family, Gender--science/arts (WEAT T7, T8)
+\end{itemize}
+
+\subsection{Evaluation}
+Association scores $s(w,A,B)$ were computed using cosine similarity. 
+Effect sizes (Cohen’s $d$) and permutation test $p$-values (10,000 iterations) were calculated. 
+Interpretation of effect sizes follows Cohen (1988): 
+$d \approx 0.2$ is a small effect, 
+$d \approx 0.5$ is a medium effect, 
+and $d \geq 0.8$ is a large effect.
+
+\section{Results}
+\subsection{Flowers vs Insects -- Positive vs Negative}
+Flower words were more closely associated with positive attributes, 
+while insect words were associated with negative attributes. 
+A strong bias was observed ($d > 0.8$, $p < 0.01$).
+
+\subsection{Gender--Career/Family (WEAT T7)}
+Male-related words were more strongly associated with career, 
+while female-related words were closer to family terms.  
+GoogleNews Word2Vec result: $d \approx 0.8$, $p < 0.01$.
+
+\subsection{Gender--Science/Arts (WEAT T8)}
+Male-related words aligned more closely with science, 
+while female-related words were closer to arts.  
+The effect size was $d \approx 0.4$, $p \approx 0.07$, 
+showing only a non-significant trend.
+
+\subsection{Visualization}
+When projecting target and attribute words using t-SNE, 
+a clear group separation was observed.
+
+\section{Discussion \& Conclusion}
+This study implemented WEAT to measure and analyze social biases in Word2Vec embeddings. 
+Key findings are as follows:
+\begin{enumerate}[leftmargin=2em]
+  \item Flowers vs Insects: strong bias observed ($d > 0.8$, $p < 0.01$)
+  \item Gender--Career/Family: significant bias ($d \approx 0.8$, $p < 0.01$)
+  \item Gender--Science/Arts: non-significant trend ($d \approx 0.4$, $p \approx 0.07$)
+\end{enumerate}
+
+These findings indicate that embeddings reflect and may amplify social stereotypes in downstream systems. 
+Future work will extend to Korean embeddings, evaluate debiasing techniques, 
+and develop specialized benchmarks for bias assessment.
+
+\begin{thebibliography}{9}
+\bibitem{caliskan2017}
+A.~Caliskan, J.~J. Bryson, and A.~Narayanan.
+\newblock Semantics derived automatically from language corpora contain human-like biases.
+\newblock \emph{Science}, 356(6334):183--186, 2017.
+
+\bibitem{bolukbasi2016}
+T.~Bolukbasi, K.-W. Chang, J.~Zou, V.~Saligrama, and A.~Kalai.
+\newblock Man is to Computer Programmer as Woman is to Homemaker? Debiasing Word Embeddings.
+\newblock In \emph{Proceedings of NeurIPS}, 2016.
+
+\bibitem{cohen1988}
+J.~Cohen.
+\newblock Statistical power analysis for the behavioral sciences.
+\newblock \emph{Lawrence Erlbaum Associates}, 2nd edition, 1988.
+\end{thebibliography}
+
+\end{document}
